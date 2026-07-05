@@ -2,6 +2,15 @@ import bpy
 
 def createMesh(name, vertices, faces):
     
+    terrain = bpy.data.objects.get(name)
+    
+    if terrain is not None:
+        print('Deleting terrain...')
+        meshData = terrain.data
+        bpy.data.objects.remove(terrain)
+        bpy.data.meshes.remove(meshData)
+      
+        
     #creating the mesh  
     mesh = bpy.data.meshes.new(name)
     

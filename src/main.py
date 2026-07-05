@@ -8,6 +8,7 @@ def main():
     height = 10
     vertices, faces = generatePlane(width, height)
     
+    
     createMesh("Terrain", vertices, faces)
     
 
