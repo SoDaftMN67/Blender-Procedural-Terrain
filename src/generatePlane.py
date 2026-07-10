@@ -24,6 +24,9 @@ def dotProduct(v1, v2):
 def fade(value):
     return 6 * (value**5) - 15 * (value**4) + 10 * (value**3)
 
+def lerp(top, bottom, spacing):
+    return top + (bottom - top) * spacing
+
 def getHeight(x, y, gradient, spacing):
 
     #get location of cells
@@ -64,15 +67,14 @@ def getHeight(x, y, gradient, spacing):
     #interloping
     u = fade(localX)
     v = fade(localY)
-    top = tl + (tr - tl) * u
-    bottom = bl + (br - bl) * v
+    top = lerp(tl, tr, u)
+    bottom = lerp(bl, br, v)
 
-    return x * 0.1 + (top + (bottom - top) * v) * 2
+    return lerp(top, bottom, v)
 
 
-def generatePlane(width, height):
+def generatePlane(width, height, frequency):
     spacing = 5
-    scale = 1
     gradient = generateGradient(width, height, spacing)
     
     vertices = []
@@ -81,7 +83,8 @@ def generatePlane(width, height):
     #for the vertices it is also (x + 1) * (x + 1) amount of vertices
     for y in range(height + 1):
         for x in range(width + 1):
-            vertices.append((x, y, getHeight(x, y, gradient, spacing)))
+            heights = getHeight(x, y, gradient, spacing) * 1.0 + getHeight(x * 2, y * 2, gradient, spacing) * 0.5 + getHeight(x * 4, y * 2, gradient, spacing) * 0.25
+            vertices.append((x * frequency, y * frequency, heights * 20))
     
     #
     for y in range(height):

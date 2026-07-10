@@ -6,7 +6,8 @@ def main():
     #hard coded width and height for now
     width = 100
     height = 100
-    vertices, faces = generatePlane(width, height)
+    frequency = 5
+    vertices, faces = generatePlane(width, height, frequency)
     
     
     createMesh("Terrain", vertices, faces)
