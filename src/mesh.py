@@ -20,6 +20,10 @@ def createMesh(name, vertices, faces):
     #connecting the object to a scene, this is jsut the current active scene
     bpy.context.scene.collection.objects.link(obj)
     
+    #assign vertex colours
+    material = bpy.data.materials.new("Slope Material")
+    material.use_nodes = True
+    
     #for now passing no edges
     mesh.from_pydata(vertices, [], faces)
     

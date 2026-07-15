@@ -1,5 +1,7 @@
 import random
 import math
+from noise import noise
+from generateHeightMap import generateHeightMap
 
 def generateGradient(width, height, spacing):
     cols = width // spacing + 1
@@ -18,64 +20,67 @@ def generateGradient(width, height, spacing):
         
     return gradientList
 
-def dotProduct(v1, v2):
-    return v1[0] * v2[0] + v1[1] * v2[1]
+def generateSlopeMap(heightMap):
+    slopeMap = []
+    
+    height = len(heightMap)
+    width = len(heightMap[0])
+    
+    for y in range(height):
+        row = []
+        for x in range(width):
+            slope = getSlope(x, y, heightMap)
+            row.append(slope)
+        slopeMap.append(row)
+    
+    return slopeMap
 
-def fade(value):
-    return 6 * (value**5) - 15 * (value**4) + 10 * (value**3)
+def getSlope(x, y, heightMap):
+    
+    if x >= len(heightMap[0]) - 1:
+        return 0
+    if y >= len(heightMap[0]) - 1:
+        return 0
+    
+    
+    current = heightMap[y][x]
+    
+    right = heightMap[y][x+1]
+    
+    up = heightMap[y+1][x]
+    
+    slopeX = abs(right - current)
+    slopeY = abs(up - current)
+    
+    return (slopeX + slopeY) / 2
 
-def lerp(top, bottom, spacing):
-    return top + (bottom - top) * spacing
+def generateTerrainHeight(x, y, heightMap):
+    height = heightMap[y][x]
+    
+    slope = getSlope(x, y, heightMap)
+    
+    finalHeight = applyRules(height, slope)
+    
+    return finalHeight
 
-def getHeight(x, y, gradient, spacing):
-
-    #get location of cells
-    gridX = x // spacing
-    gridY = y // spacing
+def applyRules(height, slope):   
     
-    #clamping
-    maxX = len(gradient[0]) - 2
-    maxY = len(gradient) - 2
-    
-    gridX = max(0, min(gridX, maxX))
-    gridY = max(0, min(gridY, maxY))
-    
-    #find how far it is into face
-    localX = (x % spacing) / spacing
-    localY = (y % spacing) / spacing
-    
-    #find the 4 points
-    topLeft = gradient[gridY][gridX]
-    topRight = gradient[gridY][gridX + 1]
-    bottomLeft = gradient[gridY + 1][gridX]
-    bottomRight = gradient[gridY + 1][gridX + 1]
-    
-    #Get distance from points
-    distanceTL = (localX, localY)
-    distanceTR = (localX - 1, localY)
-    distanceBL = (localX, localY - 1)
-    distanceBR = (localX-1,localY-1)
-    
-    tl = dotProduct(topLeft, distanceTL)
-    tr = dotProduct(topRight, distanceTR)
-    bl = dotProduct(bottomLeft, distanceBL)
-    br = dotProduct(bottomRight, distanceBR)
-    
-    print(tl, tr, bl, br)
-    print(localX, localY)
-    
-    #interloping
-    u = fade(localX)
-    v = fade(localY)
-    top = lerp(tl, tr, u)
-    bottom = lerp(bl, br, v)
-
-    return lerp(top, bottom, v)
-
+    #Rules
+    if height > 0:
+        height = height ** 1.5
+    else:
+        height = -((-height) ** 1.5)
+        
+    if slope > 0.3:
+        height *= 1.5
+        
+    return height
 
 def generatePlane(width, height, frequency):
     spacing = 5
     gradient = generateGradient(width, height, spacing)
+    heightMap = generateHeightMap(width, height, gradient, spacing)
+    slopeMap = generateSlopeMap(heightMap)
     
     vertices = []
     faces = []
@@ -83,8 +88,10 @@ def generatePlane(width, height, frequency):
     #for the vertices it is also (x + 1) * (x + 1) amount of vertices
     for y in range(height + 1):
         for x in range(width + 1):
-            heights = getHeight(x, y, gradient, spacing) * 1.0 + getHeight(x * 2, y * 2, gradient, spacing) * 0.5 + getHeight(x * 4, y * 2, gradient, spacing) * 0.25
-            vertices.append((x * frequency, y * frequency, heights * 20))
+            heightValue = heightMap[y][x]
+            slopeValue = slopeMap[y][x]
+            finalHeight = applyRules(heightValue, slopeValue)
+            vertices.append((x * frequency, y * frequency, slopeMap[y][x] * 50))
     
     #
     for y in range(height):
