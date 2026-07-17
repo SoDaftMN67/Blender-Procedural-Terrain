@@ -7,9 +7,9 @@ def main():
     width = 100
     height = 100
     frequency = 5
-    vertices, faces = generatePlane(width, height, frequency)
+    vertices, faces, colours = generatePlane(width, height, frequency)
     
     
-    createMesh("Terrain", vertices, faces)
+    createMesh("Terrain", vertices, faces, colours)
     
 

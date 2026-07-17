@@ -76,6 +76,14 @@ def applyRules(height, slope):
         
     return height
 
+def getSlopeColour(slopeValue):
+    
+    #ensures value is between 0-1
+    slope = max(0, min(slopeValue, 1))
+    
+    #RGB value
+    return (slope, 0, 1 - slope, 1)
+
 def generatePlane(width, height, frequency):
     spacing = 5
     gradient = generateGradient(width, height, spacing)
@@ -84,6 +92,7 @@ def generatePlane(width, height, frequency):
     
     vertices = []
     faces = []
+    colours = []
     
     #for the vertices it is also (x + 1) * (x + 1) amount of vertices
     for y in range(height + 1):
@@ -91,7 +100,8 @@ def generatePlane(width, height, frequency):
             heightValue = heightMap[y][x]
             slopeValue = slopeMap[y][x]
             finalHeight = applyRules(heightValue, slopeValue)
-            vertices.append((x * frequency, y * frequency, slopeMap[y][x] * 50))
+            vertices.append((x * frequency, y * frequency, finalHeight * 20))
+            colours.append(getSlopeColour(slopeValue))
     
     #
     for y in range(height):
@@ -100,4 +110,4 @@ def generatePlane(width, height, frequency):
             #all the differnet faces and we are just counting the vertices of points of the faces if you will
             faces.append((i, i+1, i + (width + 1) + 1, i + (width + 1)))
     
-    return vertices, faces
+    return vertices, faces, colours
