@@ -2,6 +2,7 @@ import random
 import math
 from noise import noise
 from generateHeightMap import generateHeightMap
+from terrain import * 
 
 def generateGradient(width, height, spacing):
     cols = width // spacing + 1
@@ -84,11 +85,30 @@ def getSlopeColour(slopeValue):
     #RGB value
     return (slope, 0, 1 - slope, 1)
 
+
+def generateMountainMask(width, height, gradient, spacing):
+    mountainMask = generateHeightMap(width, height, gradient, spacing)
+    
+    for y in range(height + 1):
+        for x in range(width + 1):
+
+            value = mountainMask[y][x]
+
+            if value < 0.5:
+                value = 0
+            else:
+                value = (value - 0.5) * 2
+
+            mountainMask[y][x] = value
+
+    return mountainMask
+
 def generatePlane(width, height, frequency):
     spacing = 5
     gradient = generateGradient(width, height, spacing)
     heightMap = generateHeightMap(width, height, gradient, spacing)
     slopeMap = generateSlopeMap(heightMap)
+    mountainMask = generateMountainMask(width, height, gradient, spacing)
     
     vertices = []
     faces = []
@@ -98,10 +118,15 @@ def generatePlane(width, height, frequency):
     for y in range(height + 1):
         for x in range(width + 1):
             heightValue = heightMap[y][x]
+            #heightValue *= mountainMask[y][x]
             slopeValue = slopeMap[y][x]
             finalHeight = applyRules(heightValue, slopeValue)
+            
+            terrainType = getTerrainType(heightValue, slopeValue)
+            terrainColour = getTerrainColour(terrainType)
+            
             vertices.append((x * frequency, y * frequency, finalHeight * 20))
-            colours.append(getSlopeColour(slopeValue))
+            colours.append(terrainColour)
     
     #
     for y in range(height):

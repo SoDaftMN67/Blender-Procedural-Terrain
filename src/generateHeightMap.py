@@ -3,7 +3,7 @@ from noise import noise
 def generateHeight(x, y, gradient, spacing):
     
     height = 0
-    frequency = 1
+    frequency = 5
     amplitude = 1
     
     octaves = 2
